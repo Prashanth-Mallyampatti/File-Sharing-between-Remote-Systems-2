@@ -77,6 +77,8 @@ public class Client
 		//calculate the number of packets to be generated based on the file size and generate the packets
 		numPackets = (int) Math.ceil((double) f.length() / mss);
 		dividePacket(dataToSend);
+		
+		long start = System.currentTimeMillis();
 
 		//Increment in size of MSS till the last packet
 		while((localPointer * mss) < dataToSend.length)
@@ -91,6 +93,9 @@ public class Client
 		//Send an EOF packet.
 		sendEOF(serverIp);
 
+		long end = System.currentTimeMillis();
+
+		System.out.println("\nFile Transfered.\nTime taken: " + (end - start) + " ms");
 		//Close client
 		System.out.println("\nClient closing..");
 		clientSocket.close();
