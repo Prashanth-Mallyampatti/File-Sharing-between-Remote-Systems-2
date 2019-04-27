@@ -91,15 +91,8 @@ public class Client
 		//Send an EOF packet.
 		sendEOF(serverIp);
 
-		System.out.println("\nSent Packets: ");
-		for(int i=0; i<sentPackets.size(); i++)
-			System.out.print(sentPackets.get(i) + ", ");
-		System.out.println("\n\nReceived ACKs");
-		for(int i=0; i<acksReceived.size(); i++)
-			System.out.print(acksReceived.get(i) + ", ");
-
 		//Close client
-		System.out.println("\n\nAll data sent.\n\nClient closing..");
+		System.out.println("\nClient closing..");
 		clientSocket.close();
 	}
 
@@ -135,7 +128,7 @@ public class Client
 			DatagramPacket toServer = new DatagramPacket(packet, packet.length, serverIp, port);
 			try {
 				clientSocket.send(toServer);
-				sentPackets.add(localPointer);
+				System.out.println("Packet Sent: " + localPointer);
 				localPointer++;
 				windowPointer++;
 			} catch(Exception e2)
@@ -164,7 +157,7 @@ public class Client
 				clientSocket.receive(server);
 				//loop until you get ACKs for all packets you sent earlier
 				ack = checkAck(server.getData());
-				acksReceived.add(ack);
+				System.out.println("ACK received for: " + ack);
 
 				//if you receive the ACK for last sent packet, go to next segment
 				if(ack == temp - 1)
@@ -183,10 +176,12 @@ public class Client
 			}
 		} catch(SocketTimeoutException e4)
 		{
+			System.out.println();
 			//If timed out, set the pointer to next packet of last received ACK
 			System.out.println("Timeout, sequence number: " + (ack+1));
 			localPointer = ack + 1;
 			windowPointer = 0;
+			System.out.println();
 		}
 	}
 

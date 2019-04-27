@@ -5,8 +5,7 @@ import java.util.*;
 public class Server
 {
 	private static int port, seqNum = 0, checksum = 0;
-	private static List<Integer> receivedList = new ArrayList<Integer>();
-	private static List<Integer> ackList = new ArrayList<Integer>();
+	private static List<Integer> acksSent = new ArrayList<Integer>();
 	public static float probability;
 	private static String file, packetType;
 	public static void main(String[] args)
@@ -42,9 +41,8 @@ public class Server
 			String clientData = new String(clientPacket.getData()).substring(0, clientPacket.getLength());
 			seqNum = binToDec(clientData.substring(0, 32));
 			packetType = clientData.substring(48, 64);
-
-			receivedList.add(seqNum);
-
+		//	System.out.println("Received Packet: " + seqNum);
+			
 			//EOF
 			if(packetType.equals("0000000000000000"))
 			{
@@ -72,7 +70,7 @@ public class Server
 				//Send ACK for the data received.
 				DatagramPacket ackToClient = new DatagramPacket(ack, ack.length, client_IP, client_port);
 				serverSocket.send(ackToClient);
-				ackList.add(seqNum);
+				acksSent.add(seqNum);
 				
 				//Mark local pointer assuming ACK will reach successfully
 				localPointer++;
@@ -85,9 +83,12 @@ public class Server
 				System.exit(-1);
 			}
 		}
+		System.out.println("\nACKs sent to client: \n");
+		for(int i = 0; i < acksSent.size(); i++)
+			System.out.print(acksSent.get(i) + ", ");
 
 		//Store the client data to 'file'
-		System.out.println("\nWriting to file...");
+		System.out.println("\n\nWriting received data to " + file);
 		FileOutputStream fp = null;
 		try{
 			fp = new FileOutputStream(file);
@@ -100,17 +101,11 @@ public class Server
 			System.exit(-1);
 		}
 		
-		System.out.println("\nPackets recieved:");
-		for(int i=0; i<receivedList.size(); i++)
-			System.out.print(receivedList.get(i) + ", ");
-		System.out.println("\n\nACKs successfully sent:");
-		for(int i=0; i<ackList.size(); i++)
-			System.out.print(ackList.get(i) + ", ");
 		try {	
 			validateFile();
 		} catch (Exception fe)
 		{
-			System.out.println("Error checking files");
+			System.out.println("File check error");
 			fe.printStackTrace();
 		}
 		System.out.println("\nClosing socket....");	
@@ -184,12 +179,11 @@ public class Server
     	}
 	private static void validateFile() throws Exception
 	{
-		System.out.println("\n\nValidating file transfer...");
+		System.out.println("\nValidating file transfer...");
         	String first = "", second = "";
         	Scanner input1 = new Scanner(new File("test.txt"));
         	Scanner input2 = new Scanner(new File(file));
-        	boolean diff = false; //no differences
-        
+        	boolean diff = false; //No differences
 		while(input1.hasNextLine() && input2.hasNextLine())
 		{
 			first = input1.nextLine();
@@ -202,7 +196,7 @@ public class Server
 			}
 		}
 		if(diff == false)
-			System.out.println("\nFile validated, no differences found.");
+			System.out.println("\nFile validated, No differences found.");
 
 	}
 }
