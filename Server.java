@@ -65,7 +65,6 @@ public class Server
 			//validate the data
 			if(validateCheckSum(data) == 0.0 && seqNum == localPointer)
 			{
-				out.write(data.getBytes());
 				InetAddress client_IP = clientPacket.getAddress();
 				int client_port = clientPacket.getPort();
 				byte[] ack = ackServer(seqNum);
@@ -77,6 +76,7 @@ public class Server
 				
 				//Mark local pointer assuming ACK will reach successfully
 				localPointer++;
+				out.write(data.getBytes());
 			}
 			}catch(Exception e)
 			{
@@ -106,8 +106,14 @@ public class Server
 		System.out.println("\n\nACKs successfully sent:");
 		for(int i=0; i<ackList.size(); i++)
 			System.out.print(ackList.get(i) + ", ");
-		
-		System.out.println("\n\nClosing socket....");	
+		try {	
+			validateFile();
+		} catch (Exception fe)
+		{
+			System.out.println("Error checking files");
+			fe.printStackTrace();
+		}
+		System.out.println("\nClosing socket....");	
 		serverSocket.close();
 	}
 
@@ -176,4 +182,27 @@ public class Server
 		
 		return Integer.parseInt("FFFF", 16) - result - checksum;
     	}
+	private static void validateFile() throws Exception
+	{
+		System.out.println("\n\nValidating file transfer...");
+        	String first = "", second = "";
+        	Scanner input1 = new Scanner(new File("test.txt"));
+        	Scanner input2 = new Scanner(new File(file));
+        	boolean diff = false; //no differences
+        
+		while(input1.hasNextLine() && input2.hasNextLine())
+		{
+			first = input1.nextLine();
+			second = input2.nextLine();
+
+			if(!first.equals(second))
+			{
+				diff = true;
+				System.out.println("Differences found: "+"\n"+first+'\n'+second);
+			}
+		}
+		if(diff == false)
+			System.out.println("\nFile validated, no differences found.");
+
+	}
 }
