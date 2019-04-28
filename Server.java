@@ -5,8 +5,8 @@ import java.util.*;
 public class Server
 {
 	private static int port, seqNum = 0, checksum = 0;
-	private static List<Integer> acksSent = new ArrayList<Integer>();
-	public static float probability;
+	private static HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+	private static float probability;
 	private static String file, packetType;
 	public static void main(String[] args)
 	{
@@ -70,8 +70,9 @@ public class Server
 				//Send ACK for the data received.
 				DatagramPacket ackToClient = new DatagramPacket(ack, ack.length, client_IP, client_port);
 				serverSocket.send(ackToClient);
-				acksSent.add(seqNum);
 				
+				map.put(seqNum, 1);
+
 				//Mark local pointer assuming ACK will reach successfully
 				localPointer++;
 				out.write(data.getBytes());
@@ -84,8 +85,8 @@ public class Server
 			}
 		}
 		System.out.println("\nACKs sent to client: \n");
-		for(int i = 0; i < acksSent.size(); i++)
-			System.out.print(acksSent.get(i) + ", ");
+		for(int i: map.keySet())
+			System.out.print(i + ", ");
 
 		//Store the client data to 'file'
 		System.out.println("\n\nWriting received data to " + file);
